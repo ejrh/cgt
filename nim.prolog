@@ -1,5 +1,4 @@
 :- module(nim, []).
-:- multifile(move/3).
 
 cgt:move(N, P, N2) :-
     N =.. [nim|H],
@@ -7,9 +6,7 @@ cgt:move(N, P, N2) :-
     N2 =.. [nim|H2].
 
 test_state(0, nim).
-
 test_state(1, nim(1)).
-
 test_state(2, nim(1,2)).
 
 nim_move([H|T], T).
