@@ -1,5 +1,5 @@
-:- module(cgt, [move/3, winner/2]).
-:- multifile move/3, winner/2.
+:- module(cgt, [move/3, winner/2, game_label/2]).
+:- multifile move/3, winner/2, game_label/2.
 
 moves(Game, Player, Moves) :-
     findall(M, move(Game, Player, M), Moves).
@@ -89,9 +89,74 @@ raw_analyse_moves(Game, Player, Enemy, Moves, Enemy) :-
     forall(member(Move, Moves), cgt:analyse_game(Move, Enemy, Enemy)).
 raw_analyse_moves(Game, Player, Enemy, Moves, black).
 
+
 print_analysis :-
     setof([G,P,V], cgt:analysis(G,P,V), L),
     member(X, L), format('~w/~w -> ~w~n', X), fail.
 
 reset_analysis :-
     retractall(analysis(_,_,_)).
+
+descendant(Game/Player, Game/Player).
+descendant(Game/Player, DescGame/DescPlayer) :-
+    children(Game/Player, Children),
+    member(Game2/Player2, Children),
+    descendant(Game2/Player2, DescGame/DescPlayer).
+
+descendants(Game/Player, Descs) :-
+    setof(DescGame/DescPlayer, descendant(Game/Player, DescGame/DescPlayer), Descs).
+
+children(Game/Player, Children) :-
+    enemy(Player, Player2),
+    once((setof(DescGame/Player2, move(Game, Player, DescGame), Children);
+        Children = [])).
+
+% GRAPHIC OUTPUT
+
+game_key(Game/Player, Key) :-
+    format(codes(Codes), '~w', Game/Player),
+    game_key_symbols(Codes, NewCodes),
+    string_codes(Key, NewCodes).
+
+game_key_symbols([], []).
+game_key_symbols([H|T], [H2|T2]) :-
+    once(game_key_symbol(H, H2)),
+    game_key_symbols(T, T2).
+
+game_key_symbol(32, 95).
+game_key_symbol(40, 80).
+game_key_symbol(44, 67).
+game_key_symbol(41, 81).
+game_key_symbol(47, 83).
+game_key_symbol(91, 66).
+game_key_symbol(45, 95).
+game_key_symbol(93, 68).
+game_key_symbol(X, X).
+
+get_game_label(Game, Label) :-
+    once((game_label(Game, Label);
+        format(string(Label), '~w', [Game]))).
+
+dot(Game, Player) :-
+    format('digraph {~n'),
+    dot_nodes(Game/Player);
+    format('}~n').
+
+dot_nodes(Game/Player) :-
+    descendants(Game/Player, Descs),
+    member(G/P, Descs),
+    children(G/P, Children),
+    analyse_game(G, P, Value),
+    game_key(G/P, Key),
+    get_game_label(G, Label),
+    dot_player_suffix(Children, P, PlayerSuffix),
+    format('~w [label=<~w~w>,color=~w];~n', [Key, Label, PlayerSuffix, Value]),
+    member(G2/P2, Children),
+    game_key(G2/P2, Key2),
+    format('~w -> ~w;~n', [Key, Key2]),
+    fail.
+
+dot_player_suffix([], Player, Suffix) :-
+    atom_string('', Suffix).
+dot_player_suffix([_|_], Player, Suffix) :-
+    format(string(Suffix), '<BR/><FONT COLOR="~w">~w</FONT>', [Player, Player]).
