@@ -5,6 +5,11 @@ cgt:move(S, P, S2) :-
     gsum_move(H, P, H2),
     S2 =.. [gsum|H2].
 
+cgt:winner(Game/Player, Winner) :-
+    Game =.. [gsum|_],
+    \+cgt:move(Game, Player, _),
+    cgt:enemy(Player, Winner).
+
 gsum_move([H|T], P, [H2|T]) :-
     cgt:move(H, P, H2).
 

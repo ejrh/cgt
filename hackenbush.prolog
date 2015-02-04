@@ -4,6 +4,11 @@ cgt:move(H, P, M) :-
     H =.. [hackenbush|_],
     hb_move(H, P, M).
 
+cgt:winner(Game/Player, Winner) :-
+    Game =.. [hackenbush|_],
+    \+cgt:move(Game, Player, _),
+    cgt:enemy(Player, Winner).
+
 test_state(0, hackenbush).
 test_state(1, hackenbush(red)).
 test_state(2, hackenbush(red, red(blue))).

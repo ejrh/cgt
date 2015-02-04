@@ -5,6 +5,10 @@ cgt:move(N, P, N2) :-
     nim_move(H, H2),
     N2 =.. [nim|H2].
 
+cgt:winner(Game/Player, Winner) :-
+    Game = nim,
+    Player = Winner.
+
 test_state(0, nim).
 test_state(1, nim(1)).
 test_state(2, nim(1,2)).
