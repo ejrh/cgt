@@ -14,6 +14,11 @@ test_state(1, hackenbush(red)).
 test_state(2, hackenbush(red, red(blue))).
 test_state(3, hackenbush(blue(red), red(blue))).
 test_state(4, hackenbush(blue(red(1)), 1)).
+random_test_state(H) :-
+    tree:random_tree(6, T),
+    tree:random_edges(T, [red, blue, green], T2),
+    T2 =.. [_|L],
+    H =.. [hackenbush|L].
 
 player_matches(P, P).
 player_matches(_P, green).
